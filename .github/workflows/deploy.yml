@@ -11,10 +11,10 @@ jobs:
       contents: write  # 需要写入权限来推送 gh-pages 分支
     steps:
       - name: Checkout 🛎️
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install and Build 🔧
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '20'
       - run: npm ci # 或 npm install
