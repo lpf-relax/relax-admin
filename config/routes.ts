@@ -17,7 +17,7 @@ export default [
     routes: [
       {
         path: '/user/login',
-        name: 'login',
+        name: '登录',
         component: './user/login',
       },
       {
@@ -25,13 +25,13 @@ export default [
         redirect: '/user/login',
       },
       {
-        name: 'register-result',
+        name: '注册结果',
         icon: 'checkCircle',
         path: '/user/register-result',
         component: './user/register-result',
       },
       {
-        name: 'register',
+        name: '注册',
         icon: 'userAdd',
         path: '/user/register',
         component: './user/register',
@@ -44,13 +44,42 @@ export default [
     ],
   },
   {
+    path: '/welcome',
+    name: '欢迎',
+    icon: 'home',
+    component: './welcome',
+  },
+  {
+    path: '/config',
+    icon: 'setting',
+    name: '配置',
+    routes: [
+      {
+        path: '/config',
+        redirect: '/config/github',
+      },
+      {
+        name: 'Github配置',
+        icon: 'profile',
+        path: '/config/github',
+        component: './config/github',
+      },
+    ],
+  },
+  {
     path: '/legado',
     icon: 'form',
-    name: 'legado',
+    name: '开源阅读',
     routes: [
       {
         path: '/legado',
-        redirect: '/legado/advanced-form',
+        redirect: '/legado/source',
+      },
+      {
+        name: '书源规则',
+        icon: 'profile',
+        path: '/legado/source',
+        component: './legado/source-list',
       },
       {
         name: '创建书源规则',
@@ -61,14 +90,14 @@ export default [
     ],
   },
   {
-    path: '/welcome',
-    name: 'welcome',
+    path: '/welcome1',
+    name: '欢迎1',
     icon: 'home',
-    component: './Welcome',
+    component: './welcome1/Welcome',
   },
   {
     path: '/admin',
-    name: 'admin',
+    name: '管理页',
     icon: 'crown',
     access: 'canAdmin',
     routes: [
@@ -85,7 +114,7 @@ export default [
   },
   {
     path: '/dashboard',
-    name: 'dashboard',
+    name: 'Dashboard',
     icon: 'dashboard',
     routes: [
       {
@@ -115,7 +144,7 @@ export default [
   {
     path: '/form',
     icon: 'form',
-    name: 'form',
+    name: '表单页',
     routes: [
       {
         path: '/form',
@@ -144,7 +173,7 @@ export default [
   {
     path: '/list',
     icon: 'table',
-    name: 'list',
+    name: '列表页',
     routes: [
       {
         path: '/list/search',
@@ -201,7 +230,7 @@ export default [
   },
   {
     path: '/profile',
-    name: 'profile',
+    name: '详情页',
     icon: 'profile',
     routes: [
       {
@@ -223,7 +252,7 @@ export default [
     ],
   },
   {
-    name: 'result',
+    name: '结果页',
     icon: 'checkCircle',
     path: '/result',
     routes: [
@@ -246,7 +275,7 @@ export default [
     ],
   },
   {
-    name: 'exception',
+    name: '异常页',
     icon: 'warning',
     path: '/exception',
     routes: [
@@ -275,7 +304,7 @@ export default [
     ],
   },
   {
-    name: 'account',
+    name: '个人页',
     icon: 'user',
     path: '/account',
     routes: [
@@ -299,7 +328,7 @@ export default [
   },
   {
     path: '/chatbot',
-    name: 'chatbot',
+    name: 'AI 助手',
     icon: 'robot',
     component: './chatbot',
   },

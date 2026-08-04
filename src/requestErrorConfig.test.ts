@@ -12,12 +12,6 @@ vi.mock('antd', () => ({
   },
 }));
 
-vi.mock('@umijs/max', () => ({
-  getIntl: vi.fn(() => ({
-    formatMessage: vi.fn(({ defaultMessage }) => defaultMessage),
-  })),
-}));
-
 describe('requestErrorConfig', () => {
   // biome-ignore lint/style/noNonNullAssertion: config handlers are always defined
   const errorThrower = errorConfig.errorConfig!.errorThrower!;
