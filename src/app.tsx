@@ -195,6 +195,8 @@ export const request: RequestConfig = {
 };
 
 export function rootContainer(container: React.ReactNode) {
+  document.documentElement.lang = 'zh-CN';
+
   return (
     <>
       <OfflineBanner />

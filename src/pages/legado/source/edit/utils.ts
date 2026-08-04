@@ -1,5 +1,5 @@
 import pickBy from 'lodash-es/pickBy';
-import type { ILegadoSourceFormValues, ILegadoSourceItem } from '../type';
+import type { ILegadoSource, ILegadoSourceFormValues } from '../type';
 
 export const transformSubmitValues = (params: ILegadoSourceFormValues) => {
   const ruleSearch = pickBy(
@@ -140,7 +140,7 @@ export const transformSubmitValues = (params: ILegadoSourceFormValues) => {
       /** 源名称 */
       bookSourceName: params.bookSourceName,
       /** 源分组 */
-      bookSourceGroup: params.bookSourceGroup,
+      bookSourceGroup: params.bookSourceGroup?.join(),
       /** 源注释 */
       bookSourceComment: params.bookSourceComment,
 
@@ -184,7 +184,7 @@ export const transformSubmitValues = (params: ILegadoSourceFormValues) => {
 
       lastUpdateTime: Date.now(),
       respondTime: 180000,
-    } as ILegadoSourceItem,
+    } as ILegadoSource,
     (v) => v !== null && v !== undefined,
   );
 
@@ -192,7 +192,7 @@ export const transformSubmitValues = (params: ILegadoSourceFormValues) => {
 };
 
 export const transformSourceItemToFormValues = (
-  values: ILegadoSourceItem,
+  values: ILegadoSource,
 ): ILegadoSourceFormValues => {
   return pickBy(
     {
@@ -205,7 +205,7 @@ export const transformSourceItemToFormValues = (
 
       bookSourceUrl: values.bookSourceUrl,
       bookSourceName: values.bookSourceName,
-      bookSourceGroup: values.bookSourceGroup,
+      bookSourceGroup: values.bookSourceGroup?.split(','),
       bookSourceComment: values.bookSourceComment,
 
       bookUrlPattern: values.bookUrlPattern,

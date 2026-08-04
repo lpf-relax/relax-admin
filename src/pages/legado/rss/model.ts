@@ -1,34 +1,36 @@
-// models/useLegadoDB.ts
+// models/useLegadoSourceDB.ts
 
 import { type IDBPDatabase, openDB } from 'idb';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { LEGADO_DB_NAME } from '@/contants/idb';
-import type { ILegadoSourceItem } from './type';
+import { DB_LEGADO_RSS, DB_LEGADO_RSS_VERSION } from '@/contants/idb';
+import type { ILegadoRss } from './type';
 
 // 类型定义
-export interface IUseLegadoDBReturn {
+export interface IUseLegadoSourceDB {
   /** 数据库是否就绪 */
   isReady: boolean;
-  /** 来源列表 */
-  sourceList: ILegadoSourceItem[];
-  /** 保存来源（存在则更新，不存在则新增） */
-  putSource: (source: ILegadoSourceItem) => Promise<void>;
+  /** 源列表 */
+  sourceList: ILegadoRss[];
+  /** 组分类 */
+  sourceGroupList: string[];
+  /** 保存源（存在则更新，不存在则新增） */
+  putSource: (source: ILegadoRss) => Promise<void>;
   /** 批量导入 */
-  importSources: (sources: ILegadoSourceItem[]) => Promise<void>;
-  /** 通过 bookSourceUrl 删除 */
-  deleteSource: (bookSourceUrl: string) => Promise<void>;
+  importSources: (sources: ILegadoRss[]) => Promise<void>;
+  /** 通过 sourceUrl 删除 */
+  deleteSource: (sourceUrl: string) => Promise<void>;
   /** 刷新列表 */
   refreshSourceList: () => Promise<void>;
-  /** 根据 bookSourceUrl 查询 */
-  getSourceByUrl: (bookSourceUrl: string) => ILegadoSourceItem | null;
+  /** 根据 sourceUrl 查询 */
+  getSourceByUrl: (sourceUrl: string) => ILegadoRss | null;
   /** 批量查询 */
-  getSourcesByUrls: (urls: string[]) => ILegadoSourceItem[];
+  getSourcesByUrls: (urls: string[]) => ILegadoRss[];
   /** 清空所有数据 */
   clearAll: () => Promise<void>;
 }
 
-export default function useLegadoDB(): IUseLegadoDBReturn {
-  const [sourceList, setSourceList] = useState<ILegadoSourceItem[]>([]);
+export default function useLegadoSourceDB(): IUseLegadoSourceDB {
+  const [sourceList, setSourceList] = useState<ILegadoRss[]>([]);
   const [isReady, setIsReady] = useState(false);
   const dbRef = useRef<IDBPDatabase | null>(null);
 
@@ -38,12 +40,10 @@ export default function useLegadoDB(): IUseLegadoDBReturn {
 
     const initDB = async () => {
       try {
-        const db = await openDB(LEGADO_DB_NAME, 1, {
+        const db = await openDB(DB_LEGADO_RSS, DB_LEGADO_RSS_VERSION, {
           upgrade(db) {
             if (!db.objectStoreNames.contains('sources')) {
-              // ✅ 使用 bookSourceUrl 作为主键
-              db.createObjectStore('sources', { keyPath: 'bookSourceUrl' });
-              // 不需要额外索引，因为主键就是 bookSourceUrl
+              db.createObjectStore('sources', { keyPath: 'sourceUrl' });
             }
           },
         });
@@ -70,12 +70,24 @@ export default function useLegadoDB(): IUseLegadoDBReturn {
     };
   }, []);
 
+  const [sourceGroupList, setSourceGroupList] = useState<string[]>([]);
+  useEffect(() => {
+    setSourceGroupList([
+      ...new Set(
+        sourceList
+          .flatMap((item) => {
+            return item.sourceGroup?.split(',') || '';
+          })
+          .filter((item) => !!item),
+      ),
+    ]);
+  }, [sourceList]);
+
   // 刷新列表
   const refreshSourceList = useCallback(async () => {
     if (!dbRef.current) return;
     try {
-      const sources: ILegadoSourceItem[] =
-        await dbRef.current.getAll('sources');
+      const sources: ILegadoRss[] = await dbRef.current.getAll('sources');
       setSourceList(
         sources.sort(
           (a, b) => (b.lastUpdateTime || 0) - (a.lastUpdateTime || 0),
@@ -88,12 +100,12 @@ export default function useLegadoDB(): IUseLegadoDBReturn {
 
   // 保存来源（存在则更新，不存在则新增）
   const putSource = useCallback(
-    async (source: ILegadoSourceItem) => {
+    async (source: ILegadoRss) => {
       if (!dbRef.current) throw new Error('数据库未初始化');
 
-      const { bookSourceUrl } = source;
-      if (!bookSourceUrl) {
-        throw new Error('bookSourceUrl 不能为空');
+      const { sourceUrl } = source;
+      if (!sourceUrl) {
+        throw new Error('sourceUrl 不能为空');
       }
 
       try {
@@ -109,7 +121,7 @@ export default function useLegadoDB(): IUseLegadoDBReturn {
 
   // 批量导入
   const importSources = useCallback(
-    async (sources: ILegadoSourceItem[]) => {
+    async (sources: ILegadoRss[]) => {
       if (!dbRef.current) throw new Error('数据库未初始化');
       if (sources.length === 0) return;
 
@@ -117,7 +129,7 @@ export default function useLegadoDB(): IUseLegadoDBReturn {
       const store = tx.objectStore('sources');
 
       for (const source of sources) {
-        if (!source.bookSourceUrl) continue;
+        if (!source.sourceUrl) continue;
         store.put(source);
       }
 
@@ -127,14 +139,14 @@ export default function useLegadoDB(): IUseLegadoDBReturn {
     [refreshSourceList],
   );
 
-  // 通过 bookSourceUrl 删除
+  // 通过 sourceUrl 删除
   const deleteSource = useCallback(
-    async (bookSourceUrl: string) => {
+    async (sourceUrl: string) => {
       if (!dbRef.current) return;
-      if (!bookSourceUrl) return;
+      if (!sourceUrl) return;
 
       try {
-        await dbRef.current.delete('sources', bookSourceUrl);
+        await dbRef.current.delete('sources', sourceUrl);
         await refreshSourceList();
       } catch (error) {
         console.error('删除来源失败:', error);
@@ -144,23 +156,21 @@ export default function useLegadoDB(): IUseLegadoDBReturn {
     [refreshSourceList],
   );
 
-  // 根据 bookSourceUrl 查询（从内存中获取
+  // 根据 sourceUrl 查询（从内存中获取
   const getSourceByUrl = useCallback(
-    (bookSourceUrl: string): ILegadoSourceItem | null => {
-      if (!bookSourceUrl) return null;
-      return (
-        sourceList.find((item) => item.bookSourceUrl === bookSourceUrl) ?? null
-      );
+    (sourceUrl: string): ILegadoRss | null => {
+      if (!sourceUrl) return null;
+      return sourceList.find((item) => item.sourceUrl === sourceUrl) ?? null;
     },
     [sourceList],
   );
 
   // 批量查询（从内存中获取）
   const getSourcesByUrls = useCallback(
-    (urls: string[]): ILegadoSourceItem[] => {
+    (urls: string[]): ILegadoRss[] => {
       if (!urls || urls.length === 0) return [];
       const urlSet = new Set(urls);
-      return sourceList.filter((item) => urlSet.has(item.bookSourceUrl));
+      return sourceList.filter((item) => urlSet.has(item.sourceUrl));
     },
     [sourceList],
   );
@@ -180,6 +190,7 @@ export default function useLegadoDB(): IUseLegadoDBReturn {
   return {
     isReady,
     sourceList,
+    sourceGroupList,
     putSource,
     importSources,
     deleteSource,

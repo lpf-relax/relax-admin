@@ -7,7 +7,8 @@ import {
 import { history, useModel, useSearchParams } from '@umijs/max';
 import { message } from 'antd';
 import { type FC, useEffect, useState } from 'react';
-import type { ILegadoSourceFormValues, ILegadoSourceItem } from '../type';
+import { ROUTE_PATHS } from '@/contants/routes';
+import type { ILegadoSource, ILegadoSourceFormValues } from '../type';
 import { TabBasic } from './components/tab-basic';
 import { TabContent } from './components/tab-content';
 import { TabExplore } from './components/tab-explore';
@@ -21,11 +22,13 @@ import {
 
 type InternalNamePath = (string | number)[];
 
-// const originData: ILegadoSourceItem = {}
-
 const defaultInitialValues = {
   bookSourceType: 0,
   enabled: true,
+  header: `{
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
+    "referer": "{{baseUrl}}",
+  }`,
 };
 
 interface ErrorField {
@@ -36,7 +39,7 @@ const SourceCreate: FC<Record<string, any>> = () => {
   const [searchParams] = useSearchParams();
   const bookSourceUrlQuery = searchParams.get('bookSourceUrl') || '';
 
-  const { putSource, getSourceByUrl } = useModel('legado.model');
+  const { putSource, getSourceByUrl } = useModel('legado.source.model');
 
   const getErrorInfo = (errors: ErrorField[]) => {
     const errorCount = errors.filter((item) => item.errors.length > 0).length;
@@ -74,10 +77,10 @@ const SourceCreate: FC<Record<string, any>> = () => {
     try {
       const data = transformSubmitValues(values);
 
-      await putSource(data as ILegadoSourceItem);
+      await putSource(data as ILegadoSource);
 
       message.success('提交成功');
-      history.push('/legado/source');
+      history.push(ROUTE_PATHS.LEGADO_SOURCE);
     } catch {
       message.error('提交失败，请重试！');
     }
