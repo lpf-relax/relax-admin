@@ -5,9 +5,18 @@ import {
   ProFormText,
   ProFormTextArea,
 } from '@ant-design/pro-components';
+import { useModel } from '@umijs/max';
 import { Col, Row } from 'antd';
+import type { ILegadoSourceFormValues } from '../../type';
 
-export const TabBasic = () => {
+export const TabBasic = ({
+  initialValues,
+}: {
+  initialValues?: ILegadoSourceFormValues;
+}) => {
+  const { sourceList } = useModel('legado.model');
+  const isEdit = !!initialValues?.bookSourceUrl;
+
   return (
     <>
       <Row gutter={16}>
@@ -54,6 +63,13 @@ export const TabBasic = () => {
           />
         </Col>
 
+        {/* 权重 */}
+        <Col lg={6} md={12} sm={24}>
+          <ProFormDigit label="权重" name="weight" min={0} step={1} />
+        </Col>
+      </Row>
+
+      <Row gutter={16}>
         {/* 启用 */}
         <Col lg={4} md={12} sm={24}>
           <ProFormSwitch label="启用" name="enabled" />
@@ -80,6 +96,28 @@ export const TabBasic = () => {
               {
                 required: true,
                 message: '请输入源URL',
+              },
+              {
+                validator: (_rule, value) => {
+                  if (!value) return Promise.resolve();
+
+                  // 编辑模式下，URL 未变化则跳过校验
+                  if (isEdit && value === initialValues?.bookSourceUrl) {
+                    return Promise.resolve();
+                  }
+
+                  const exists = sourceList.some(
+                    (item) => item.bookSourceUrl === value,
+                  );
+
+                  if (exists) {
+                    return Promise.reject(
+                      new Error(`源URL "${value}" 已存在，请勿重复添加`),
+                    );
+                  }
+
+                  return Promise.resolve();
+                },
               },
             ]}
             placeholder="请输入源URL"

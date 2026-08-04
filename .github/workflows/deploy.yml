@@ -1,31 +1,44 @@
-name: Deploy to GitHub Pages
+name: Build and Deploy to GitHub Pages
 
 on:
   push:
-    branches:
-      - all-blocks
-
-permissions:
-  contents: write
-  pages: write
+    branches: [ "main" ]  # 当推送到 main 分支时触发
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # 部署到 gh-pages 分支需要写入权限
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      # 1. 检出代码
+      - name: Checkout 🛎️
+        uses: actions/checkout@v4
 
-      - uses: utooland/setup-utoo@e63ce40ce5f7e9838c666a57479344e91c3a9795 # v1
-      - run: ut
-      - name: Set COMMIT_HASH
-        run: echo "COMMIT_HASH=${{ github.sha }}" >> $GITHUB_ENV
-      - run: ut build
+      # 2. 设置 Node.js (使用你本地的 Node 24)
+      - name: Setup Node.js 🔧
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'  # 明确指定 Node 24
+          # 注意：setup-node 本身不管理 pnpm
 
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@84c30a85c19949d7eee79c4ff27748b70285e453 # v4.1.0
+      # 3. 安装并配置 pnpm (版本与你本地一致)
+      - name: Setup pnpm 📦
+        uses: pnpm/action-setup@v4  # 使用最新 v4 版本
+        with:
+          version: '11'  # 指定与你本地一致的 pnpm 版本
+
+      # 4. 安装依赖 (使用 pnpm)
+      - name: Install dependencies 📦
+        run: pnpm install --frozen-lockfile  # 严格按 pnpm-lock.yaml 安装
+
+      # 5. 构建项目
+      - name: Build 🏗️
+        run: pnpm run build  # Ant Design Pro 默认构建命令
+
+      # 6. 部署到 GitHub Pages
+      - name: Deploy 🚀
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
-          cname: preview.pro.ant.design
+          publish_dir: ./dist  # Ant Design Pro 默认输出目录

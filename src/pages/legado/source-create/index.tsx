@@ -1,77 +1,62 @@
-import { CloseCircleOutlined } from '@ant-design/icons';
-import type { ProColumnType } from '@ant-design/pro-components';
 import {
-  EditableProTable,
   FooterToolbar,
   PageContainer,
   ProCard,
   ProForm,
-  ProFormDateRangePicker,
-  ProFormDigit,
-  ProFormSelect,
-  ProFormSwitch,
-  ProFormText,
-  ProFormTextArea,
-  ProFormTimePicker,
 } from '@ant-design/pro-components';
-import { Button, Card, Col, message, Popover, Row } from 'antd';
-import type { FC } from 'react';
-import { useRef, useState } from 'react';
+import { history, useModel, useSearchParams } from '@umijs/max';
+import { message } from 'antd';
+import { type FC, useEffect, useState } from 'react';
+import type { ILegadoSourceFormValues, ILegadoSourceItem } from '../type';
 import { TabBasic } from './components/tab-basic';
 import { TabContent } from './components/tab-content';
 import { TabExplore } from './components/tab-explore';
 import { TabInfo } from './components/tab-info';
 import { TabSearch } from './components/tab-search';
 import { TabToc } from './components/tab-toc';
-import { fakeSubmitForm } from './service';
-import useStyles from './style.style';
+import {
+  transformSourceItemToFormValues,
+  transformSubmitValues,
+} from './utils';
 
-interface TableFormDateType {
-  key: string;
-  workId?: string;
-  name?: string;
-  department?: string;
-  isNew?: boolean;
-  editable?: boolean;
-}
 type InternalNamePath = (string | number)[];
-const fieldLabels = {
-  name: '仓库名',
-  url: '仓库域名',
-  owner: '仓库管理员',
-  approver: '审批人',
-  dateRange: '生效日期',
-  type: '仓库类型',
-  name2: '任务名',
-  url2: '任务描述',
-  owner2: '执行人',
-  approver2: '责任人',
-  dateRange2: '生效日期',
-  type2: '任务类型',
+
+// const originData: ILegadoSourceItem = {}
+
+const defaultInitialValues = {
+  bookSourceType: 0,
+  enabled: true,
 };
 
 interface ErrorField {
   name: InternalNamePath;
   errors: string[];
 }
-const AdvancedForm: FC<Record<string, any>> = () => {
-  const { styles } = useStyles();
-  const [error, setError] = useState<ErrorField[]>([]);
+const SourceCreate: FC<Record<string, any>> = () => {
+  const [searchParams] = useSearchParams();
+  const bookSourceUrlQuery = searchParams.get('bookSourceUrl') || '';
+
+  const { putSource, getSourceByUrl } = useModel('legado.model');
+
   const getErrorInfo = (errors: ErrorField[]) => {
     const errorCount = errors.filter((item) => item.errors.length > 0).length;
     if (!errors || errorCount === 0) {
-      return null;
+      return;
     }
     const scrollToField = (fieldKey: string) => {
       const labelNode = document.querySelector(`label[for="${fieldKey}"]`);
       if (labelNode) {
-        labelNode.scrollIntoView(true);
+        labelNode.scrollIntoView({
+          block: 'center',
+        });
       }
     };
-    const errorList = errors.map((err) => {
+
+    errors.some((err) => {
       if (!err || err.errors.length === 0) {
-        return null;
+        return false;
       }
+
       const key = err.name[0] as
         | 'name'
         | 'url'
@@ -79,73 +64,67 @@ const AdvancedForm: FC<Record<string, any>> = () => {
         | 'approver'
         | 'dateRange'
         | 'type';
-      return (
-        <button
-          key={key}
-          type="button"
-          className={styles.errorListItem}
-          onClick={() => scrollToField(key)}
-        >
-          <CloseCircleOutlined className={styles.errorIcon} />
-          <div>{err.errors[0]}</div>
-          <div className={styles.errorField}>{fieldLabels[key]}</div>
-        </button>
-      );
+
+      scrollToField(key);
+      return true;
     });
-    return (
-      <span className={styles.errorIcon}>
-        <Popover
-          title="表单校验信息"
-          content={errorList}
-          classNames={{
-            root: styles.errorPopover,
-          }}
-          trigger="click"
-          getPopupContainer={(trigger: HTMLElement) => {
-            if (trigger?.parentNode) {
-              return trigger.parentNode as HTMLElement;
-            }
-            return trigger;
-          }}
-        >
-          <CloseCircleOutlined />
-        </Popover>
-        {errorCount}
-      </span>
-    );
   };
-  const onFinish = async (values: Record<string, any>) => {
-    setError([]);
+  const onFinish = async (values: ILegadoSourceFormValues) => {
+    console.log('values', values);
     try {
-      await fakeSubmitForm(values);
+      const data = transformSubmitValues(values);
+
+      await putSource(data as ILegadoSourceItem);
+
       message.success('提交成功');
+      history.push('/legado/source');
     } catch {
       message.error('提交失败，请重试！');
     }
   };
   const onFinishFailed = (errorInfo: any) => {
-    setError(errorInfo.errorFields);
+    getErrorInfo(errorInfo.errorFields);
   };
+
+  const [form] = ProForm.useForm<ILegadoSourceFormValues>();
+  const [initialValues, setInitialValues] = useState<ILegadoSourceFormValues>();
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    if (!bookSourceUrlQuery) {
+      setInitialValues(defaultInitialValues);
+      setLoading(false);
+      return;
+    }
+
+    const bookSourceUrl = decodeURIComponent(bookSourceUrlQuery);
+    const sourceInfo = getSourceByUrl(bookSourceUrl);
+    if (!sourceInfo) {
+      message.error(`未找到来源信息，bookSourceUrl: ${bookSourceUrl}`);
+      setInitialValues(defaultInitialValues);
+      setLoading(false);
+      return;
+    }
+
+    const formValues = transformSourceItemToFormValues(sourceInfo);
+    setInitialValues(formValues);
+    setLoading(false);
+  }, [bookSourceUrlQuery]);
+
+  if (loading) {
+    return <PageContainer loading={true} />;
+  }
 
   return (
     <ProForm
+      form={form}
       layout="vertical"
       requiredMark={false}
       submitter={{
         render: (_props, dom) => {
-          return (
-            <FooterToolbar>
-              {getErrorInfo(error)}
-              {dom}
-            </FooterToolbar>
-          );
+          return <FooterToolbar>{dom}</FooterToolbar>;
         },
       }}
-      initialValues={{
-        bookSourceType: 0,
-        enabled: true,
-        customOrder: 0,
-      }}
+      initialValues={initialValues}
       onFinish={onFinish}
       onFinishFailed={onFinishFailed}
     >
@@ -158,31 +137,37 @@ const AdvancedForm: FC<Record<string, any>> = () => {
               {
                 key: 'basic',
                 label: '基本',
-                children: <TabBasic />,
+                forceRender: true,
+                children: <TabBasic initialValues={initialValues} />,
               },
               {
                 key: 'search',
                 label: '搜索',
+                forceRender: true,
                 children: <TabSearch />,
               },
               {
                 key: 'explore',
                 label: '发现',
+                forceRender: true,
                 children: <TabExplore />,
               },
               {
                 key: 'info',
                 label: '详情',
+                forceRender: true,
                 children: <TabInfo />,
               },
               {
                 key: 'toc',
                 label: '目录',
+                forceRender: true,
                 children: <TabToc />,
               },
               {
                 key: 'content',
                 label: '正文',
+                forceRender: true,
                 children: <TabContent />,
               },
             ],
@@ -192,4 +177,4 @@ const AdvancedForm: FC<Record<string, any>> = () => {
     </ProForm>
   );
 };
-export default AdvancedForm;
+export default SourceCreate;

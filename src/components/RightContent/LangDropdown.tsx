@@ -1,8 +1,6 @@
 import { CheckOutlined, GlobalOutlined } from '@ant-design/icons';
-import { getAllLocales, getLocale, setLocale } from '@umijs/max';
 import type { MenuProps } from 'antd';
 import { Button } from 'antd';
-import { useMemo } from 'react';
 import HeaderDropdown from '../HeaderDropdown';
 import useHeaderActionStyles from './style';
 
@@ -19,14 +17,13 @@ const localeLabelMap: Record<string, { emoji: string; label: string }> = {
 
 const onLangClick: MenuProps['onClick'] = ({ key }) => {
   if (key.startsWith('lang-')) {
-    setLocale(key.replace('lang-', ''), false);
   }
 };
 
 export const LangDropdown: React.FC = () => {
   const { styles } = useHeaderActionStyles();
-  const allLocales = useMemo(() => getAllLocales(), []);
-  const currentLocale = getLocale();
+  const allLocales = ['zh-CN'];
+  const currentLocale = 'zh-CN';
   const supportLocales = allLocales.filter((l) => l in localeLabelMap);
 
   if (supportLocales.length <= 1) {

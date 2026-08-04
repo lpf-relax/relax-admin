@@ -62,7 +62,7 @@ vi.mock('./components/TopSearch', () => ({
 vi.mock('./components/ProportionSales', () => ({
   default: ({ loading, salesPieData }: any) => (
     <div data-testid="proportion-sales">
-      ProportionSales -{' '}
+      ProportionSales -
       {loading ? 'loading' : `${salesPieData?.length || 0} items`}
     </div>
   ),
