@@ -3,6 +3,7 @@ import {
   CloudUploadOutlined,
   DeleteOutlined,
   FormOutlined,
+  ImportOutlined,
   PlusOutlined,
 } from '@ant-design/icons';
 import type {
@@ -16,7 +17,7 @@ import {
   ProTable,
 } from '@ant-design/pro-components';
 import { history, useModel } from '@umijs/max';
-import { App, Button, Drawer, Popconfirm } from 'antd';
+import { App, Button, Drawer, Input, Modal, Popconfirm } from 'antd';
 import React, { useCallback, useRef, useState } from 'react';
 import { GITHUB_LEGADO_SOURCE } from '@/contants/github';
 import type { ILegadoSourceItem } from '../type';
@@ -26,7 +27,8 @@ const TableList: React.FC = () => {
   const { message } = App.useApp();
 
   const { getDataFromGithub, saveDataToGithub } = useModel('github');
-  const { sourceList, deleteSource, importSources } = useModel('legado.model');
+  const { sourceList, deleteSource, putSource, importSources, getSourceByUrl } =
+    useModel('legado.model');
 
   const [showDetail, setShowDetail] = useState<boolean>(false);
   const [currentRow, setCurrentRow] = useState<ILegadoSourceItem>();
@@ -115,6 +117,37 @@ const TableList: React.FC = () => {
     message.success('提交成功！');
   }, []);
 
+  const [importModalOpen, setImportModalOpen] = useState(false);
+  const [importSource, setImportSource] = useState<string>();
+  const handleOpenImportModal = () => setImportModalOpen(true);
+  const handleCloseImportModal = () => setImportModalOpen(false);
+  const handleImportModalOk = () => {
+    if (!importSource) {
+      message.error('请输入内容');
+      return;
+    }
+    try {
+      const res = JSON.parse(importSource);
+      if (!res.bookSourceUrl) {
+        message.error('缺少bookSourceUrl');
+        return;
+      }
+      if (getSourceByUrl(res.bookSourceUrl)) {
+        message.error('已存在bookSourceUrl');
+        return;
+      }
+
+      putSource(res);
+    } catch (error) {
+      message.error('导入失败！');
+      return;
+    }
+
+    handleCloseImportModal();
+    setImportSource(undefined);
+    actionRef.current?.reloadAndRest?.();
+  };
+
   return (
     <PageContainer>
       {/* {contextHolder} */}
@@ -149,6 +182,13 @@ const TableList: React.FC = () => {
             onClick={pushDataToGithub}
           >
             同步到Github
+          </Button>,
+          <Button
+            key="get-import"
+            icon={<ImportOutlined />}
+            onClick={handleOpenImportModal}
+          >
+            导入
           </Button>,
         ]}
         request={async (params) => {
@@ -212,6 +252,18 @@ const TableList: React.FC = () => {
           />
         )}
       </Drawer>
+
+      <Modal
+        title="导入书源"
+        open={importModalOpen}
+        onOk={handleImportModalOk}
+        onCancel={handleCloseImportModal}
+      >
+        <Input.TextArea
+          value={importSource}
+          onChange={(e) => setImportSource(e.target.value)}
+        />
+      </Modal>
     </PageContainer>
   );
 };

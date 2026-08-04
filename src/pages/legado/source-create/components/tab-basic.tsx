@@ -14,7 +14,7 @@ export const TabBasic = ({
 }: {
   initialValues?: ILegadoSourceFormValues;
 }) => {
-  const { sourceList } = useModel('legado.model');
+  const { sourceList, sourceGroupList } = useModel('legado.model');
   const isEdit = !!initialValues?.bookSourceUrl;
 
   return (
@@ -141,9 +141,14 @@ export const TabBasic = ({
 
         {/* 源分组 */}
         <Col span={24}>
-          <ProFormText
+          <ProFormSelect
             label="源分组"
             name="bookSourceGroup"
+            mode="tags"
+            options={sourceGroupList}
+            fieldProps={{
+              tokenSeparators: [',', ';'],
+            }}
             rules={[
               {
                 required: true,

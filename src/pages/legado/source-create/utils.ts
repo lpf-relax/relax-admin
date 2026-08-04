@@ -140,7 +140,7 @@ export const transformSubmitValues = (params: ILegadoSourceFormValues) => {
       /** 源名称 */
       bookSourceName: params.bookSourceName,
       /** 源分组 */
-      bookSourceGroup: params.bookSourceGroup,
+      bookSourceGroup: params.bookSourceGroup?.join(),
       /** 源注释 */
       bookSourceComment: params.bookSourceComment,
 
@@ -205,7 +205,7 @@ export const transformSourceItemToFormValues = (
 
       bookSourceUrl: values.bookSourceUrl,
       bookSourceName: values.bookSourceName,
-      bookSourceGroup: values.bookSourceGroup,
+      bookSourceGroup: values.bookSourceGroup?.split(','),
       bookSourceComment: values.bookSourceComment,
 
       bookUrlPattern: values.bookUrlPattern,

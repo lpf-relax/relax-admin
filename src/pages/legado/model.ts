@@ -11,6 +11,8 @@ export interface IUseLegadoDBReturn {
   isReady: boolean;
   /** 来源列表 */
   sourceList: ILegadoSourceItem[];
+  /** 组分类 */
+  sourceGroupList: string[];
   /** 保存来源（存在则更新，不存在则新增） */
   putSource: (source: ILegadoSourceItem) => Promise<void>;
   /** 批量导入 */
@@ -69,6 +71,19 @@ export default function useLegadoDB(): IUseLegadoDBReturn {
       // 不关闭数据库，保持连接
     };
   }, []);
+
+  const [sourceGroupList, setSourceGroupList] = useState<string[]>([]);
+  useEffect(() => {
+    setSourceGroupList([
+      ...new Set(
+        sourceList
+          .flatMap((item) => {
+            return item.bookSourceGroup?.split(',') || '';
+          })
+          .filter((item) => !!item),
+      ),
+    ]);
+  }, [sourceList]);
 
   // 刷新列表
   const refreshSourceList = useCallback(async () => {
@@ -180,6 +195,7 @@ export default function useLegadoDB(): IUseLegadoDBReturn {
   return {
     isReady,
     sourceList,
+    sourceGroupList,
     putSource,
     importSources,
     deleteSource,

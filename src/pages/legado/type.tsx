@@ -173,7 +173,7 @@ export interface ILegadoSourceFormValues {
   /** 源名称 */
   bookSourceName?: string;
   /** 源分组 */
-  bookSourceGroup?: string;
+  bookSourceGroup?: string[];
   /** 源注释 */
   bookSourceComment?: string;
 
