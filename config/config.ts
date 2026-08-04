@@ -34,7 +34,8 @@ const commitHash =
 const PUBLIC_PATH: string = '/relax-admin/';
 
 export default defineConfig({
-  base: '/relax-admin',
+  base: PUBLIC_PATH,
+  favicons: [`${PUBLIC_PATH}/favicon.ico`],
 
   alias: {
     '@root': join(__dirname, '..'),
