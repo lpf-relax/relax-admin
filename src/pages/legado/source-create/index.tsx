@@ -26,6 +26,10 @@ type InternalNamePath = (string | number)[];
 const defaultInitialValues = {
   bookSourceType: 0,
   enabled: true,
+  header: `{
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
+    "referer": "{{baseUrl}}",
+  }`,
 };
 
 interface ErrorField {

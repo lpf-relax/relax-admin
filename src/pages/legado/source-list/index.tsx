@@ -110,12 +110,13 @@ const TableList: React.FC = () => {
   }, []);
 
   const pushDataToGithub = useCallback(async () => {
+    console.log('pushDataToGithub', sourceList);
     await saveDataToGithub({
       data: sourceList,
       filePath: GITHUB_LEGADO_SOURCE,
     });
     message.success('提交成功！');
-  }, []);
+  }, [sourceList]);
 
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [importSource, setImportSource] = useState<string>();
