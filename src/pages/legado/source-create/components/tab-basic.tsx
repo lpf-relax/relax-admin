@@ -48,6 +48,10 @@ export const TabBasic = ({
                 label: '文件',
                 value: 3,
               },
+              {
+                label: '视频',
+                value: 4,
+              },
             ]}
             placeholder="请选择类型"
           />
