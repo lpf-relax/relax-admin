@@ -1,3 +1,5 @@
+import { ROUTE_PATHS } from '../src/contants/routes';
+
 /**
  * @name umi 的路由配置
  * @description 只支持 path,component,routes,redirect,wrappers,name,icon 的配置
@@ -72,20 +74,34 @@ export default [
     name: '开源阅读',
     routes: [
       {
-        path: '/legado',
-        redirect: '/legado/source',
+        path: ROUTE_PATHS.LEGADO_BASE,
+        redirect: ROUTE_PATHS.LEGADO_SOURCE,
       },
       {
-        name: '书源规则',
+        name: '书源',
         icon: 'profile',
-        path: '/legado/source',
-        component: './legado/source-list',
+        path: ROUTE_PATHS.LEGADO_SOURCE,
+        component: './legado/source/list',
       },
       {
-        name: '创建书源规则',
+        name: '创建书源',
         icon: 'profile',
-        path: '/legado/source-create',
-        component: './legado/source-create',
+        path: ROUTE_PATHS.LEGADO_SOURCE_CREATE,
+        component: './legado/source/edit',
+        hideInMenu: true,
+      },
+      {
+        name: '订阅源',
+        icon: 'profile',
+        path: ROUTE_PATHS.LEGADO_RSS,
+        component: './legado/rss/list',
+      },
+      {
+        name: '创建订阅源',
+        icon: 'profile',
+        path: ROUTE_PATHS.LEGADO_RSS_CREATE,
+        component: './legado/rss/edit',
+        hideInMenu: true,
       },
     ],
   },

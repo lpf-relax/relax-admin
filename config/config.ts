@@ -182,7 +182,11 @@ export default defineConfig({
   ],
 
   //================ pro 插件配置 =================
-  plugins: ['@umijs/max-plugin-openapi', '@umijs/request-record'],
+  plugins: [
+    '@umijs/max-plugin-openapi',
+    '@umijs/request-record',
+    './config/plugin/html-lang-plugin.ts',
+  ],
 
   /**
    * @name openAPI 插件的配置

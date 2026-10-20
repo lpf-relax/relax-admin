@@ -14,7 +14,7 @@ export const TabBasic = ({
 }: {
   initialValues?: ILegadoSourceFormValues;
 }) => {
-  const { sourceList, sourceGroupList } = useModel('legado.model');
+  const { sourceList, sourceGroupList } = useModel('legado.source.model');
   const isEdit = !!initialValues?.bookSourceUrl;
 
   return (

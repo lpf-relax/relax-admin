@@ -1,4 +1,4 @@
-export interface ILegadoSourceItem {
+export interface ILegadoSource {
   bookSourceType?: number;
   enabled?: boolean;
   enabledExplore?: boolean;
