@@ -13,18 +13,18 @@ jobs:
     steps:
       # 1. 检出代码
       - name: Checkout 🛎️
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # 2. 设置 Node.js (使用你本地的 Node 24)
       - name: Setup Node.js 🔧
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '24'  # 明确指定 Node 24
           # 注意：setup-node 本身不管理 pnpm
 
       # 3. 安装并配置 pnpm (版本与你本地一致)
       - name: Setup pnpm 📦
-        uses: pnpm/action-setup@v4  # 使用最新 v4 版本
+        uses: pnpm/action-setup@v6  # 使用最新 v4 版本
         with:
           version: '11'  # 指定与你本地一致的 pnpm 版本
 
